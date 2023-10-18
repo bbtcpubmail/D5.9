@@ -18,9 +18,15 @@ class Category(models.Model):
     category_name = models.CharField(max_length=255, unique=True)
 
 
+
+article = 'ar'
+news = 'nw'
+TYPE = [(news , 'News'),
+        (article , 'Article')]
+
 class Post(models.Model):
     post_author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    post_type = models.CharField()
+    post_type = models.CharField(max_length=2, choices=TYPE, default=news)
     post_time = models.DateTimeField(auto_now_add=True)
     post_category = models.ManyToManyField(Category, through='PostCategory')
     post_title = models.CharField(max_length=255)
