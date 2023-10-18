@@ -15,7 +15,7 @@ class Author(models.Model):
 
 
 class Category(models.Model):
-    category_name = models.CharField(max_lenght=255, unique=True)
+    category_name = models.CharField(max_length=255, unique=True)
 
 
 class Post(models.Model):
@@ -23,7 +23,7 @@ class Post(models.Model):
     post_type = models.CharField()
     post_time = models.DateTimeField(auto_now_add=True)
     post_category = models.ManyToManyField(Category, through='PostCategory')
-    post_title = models.CharField(max_lenght=255)
+    post_title = models.CharField(max_length=255)
     post_text = models.TextField()
     post_rating = models.IntegerField(default=0)
 
