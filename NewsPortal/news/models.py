@@ -1,30 +1,31 @@
+from typing import Union, Any
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Sum
 
 
 # Create your models here.
-
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     author_rating = models.IntegerField(default=0)
 
     def update_rating(self):
-        self.author_rating = Post.objects.filter(post_author=self.pk).aggregate(sum('post_rating')) * 3
-        self.author_rating += Comment.objects.filter(user=self.user).aggregate(sum('comment_rating'))
-        self.author_rating += Comment.objects.filter(post__post_author=self.pk).aggregate(sum('comment_rating'))
+        rating = Post.objects.filter(post_author=self.pk).aggregate(sum=Sum('post_rating'))['sum'] * 3
+        rating += Comment.objects.filter(user=self.user).aggregate(sum=Sum('comment_rating'))['sum']
+        rating += Comment.objects.filter(post__post_author=self.pk).aggregate(sum=Sum('comment_rating'))['sum']
+        self.author_rating = rating
+        self.save()
 
 
 class Category(models.Model):
     category_name = models.CharField(max_length=255, unique=True)
 
 
-
-article = 'ar'
-news = 'nw'
-TYPE = [(news , 'News'),
-        (article , 'Article')]
-
 class Post(models.Model):
+    article = 'ar'
+    news = 'nw'
+    TYPE = [(news, 'News'), (article, 'Article')]
     post_author = models.ForeignKey(Author, on_delete=models.CASCADE)
     post_type = models.CharField(max_length=2, choices=TYPE, default=news)
     post_time = models.DateTimeField(auto_now_add=True)
@@ -43,7 +44,7 @@ class Post(models.Model):
             self.save()
 
     def preview(self):
-        return self.post_text[124:] + '...'
+        return self.post_text[:124] + '...'
 
 
 class PostCategory(models.Model):
