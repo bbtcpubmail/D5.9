@@ -1,0 +1,96 @@
+from news.models import User
+from news.models import Author, Category, Post, PostCategory, Comment
+from django.db.models import Sum
+
+User.objects.all().delete()
+Author.objects.all().delete()
+Category.objects.all().delete()
+Post.objects.all().delete()
+PostCategory.objects.all().delete()
+Comment.objects.all().delete()
+
+
+user1 = User.objects.create_user('Иван Петров') 
+User.objects.create_user('Сергей Иванов')
+
+author1 = Author.objects.create(user = user1)
+author2 = Author.objects.create(user = User.objects.get(username = 'Сергей Иванов'))
+
+Category.objects.create(category_name = 'Policy')
+Category.objects.create(category_name = 'Finance')
+Category.objects.create(category_name = 'Sport')
+Category.objects.create(category_name = 'Military')
+
+
+post1 = Post.objects.create(post_author = Author.objects.get(user__username = 'Иван Петров'), post_type = 'at', post_title = 'Эксперты сообщили о снижении цен аренды жилья на курортах Турции', post_text = '''
+Самыми востребованными турецкими направлениями в октябре 2023 года у россиян стали Аланья, Стамбул и Анталья, сообщили в сервисе онлайн-бронирования жилья для отдыха "Суточно.ру"
+МОСКВА, 18 октября. /Корр. ТАСС Наталья Денисова/. Цены на посуточную аренду жилья на курортах Турции в октябре уменьшились до 30% на фоне несезона в сравнении
+ с среднестатистическими значениями лета 2023 года.
+ Сильнее всего они сократились в Чамьюве, Кемере, Белеке и Мерсине, сообщили ТАСС аналитики российского сервиса онлайн-бронирования жилья для отдыха "Суточно.ру".
+"Среди популярных направлений Турции наибольшее снижение цен на посуточную аренду в октябре по сравнению со средними значениями лета наблюдается в Чамьюве - на 30%.
+ Средняя ставка в данный момент на курорте составляет 6 100 рублей за сутки", - рассказали аналитики.
+Также заметное снижение цен зафиксировано в Кемере - на 19% (до 5 480 рублей за сутки), Белеке - на 18% (до 6 520 рублей) и Мерсине - на 17% (до 3 130 рублей).
+ В Кушадасах ставка сократилась на 8% - до 4 890 рублей, в Авсалларе - на 5% (до 2 950 рублей), в Анталье - на 3% (до 4 545 рублей).
+Однако на отдельных курортах, хоть и ненамного, но произошло повышение цен, рассказал ТАСС владелец и генеральный директор "Суточно.ру" Юрий Кузнецов. 
+"В Аланье, которая лидирует по числу бронирований среди всех курортов Турции, прирост составил 8%. Сейчас аренда здесь стоит в среднем 5 459 рублей за сутки.
+ В Стамбуле ставки увеличились на 5%, до 5 159 рублей. Но в целом надо помнить, что цены и их колебания зависят от курса доллара", - пояснил собеседник агентства.
+''')
+
+
+post2 = Post.objects.create(post_author = author2, post_type = 'nw', post_title = 'Южная Корея пригрозила России санкциями в случае передачи военных технологий КНДР', post_text = '''
+СЕУЛ, 19 октября. /ТАСС/. Республика Корея будет вынуждена ввести санкции вместе с западными странами против России и КНДР в случае передачи российских военных технологий Пхеньяну
+ в обмен на боеприпасы. Об этом заявил министр объединения Республики Корея Ким Ён Хо в интервью агентству Yonhap и телеканалу Yonhap News TV.
+''')
+
+post3 = Post.objects.create(post_author = author2, post_type = 'at', post_title = 'Рубль царя Константина', post_text = '''
+Константиновский рубль – одна из самых редких и, пожалуй, самых загадочных русских монет.
+ Необычная история выпуска привела к появлению множества всевозможных версий и легенд на этот счёт.
+ Пробные экземпляры были отчеканены из серебра в количестве 5 штук на Петербургском монетном дворе в 1825 году.
+ Давайте пройдёмся по истории появления константиновского рубля.
+19 ноября 1825 года в Таганроге умирает император Александр I.
+ Преемником считался старший брат покойного императора – Константин Павлович, так как ушедший в мир иной император не оставил наследников.
+ Присягу новому императору принимают сначала жители столицы, а через три дня ему присягают и москвичи.
+ Буквально через час после вести о смерти Александра, присягу приносит и будущий император Николай I.
+''')
+
+post1_Finance = PostCategory(post = post1, category = Category.objects.get(category_name = 'Finance'))
+post1_Finance.save()
+post2.post_category.add(Category.objects.get(category_name = 'Military'))
+post2.post_category.add(Category.objects.get(category_name = 'Policy'))
+post3.post_category.add(Category.objects.get(category_name = 'Finance'))
+
+comment1 = Comment(user = user1, comment_text = 'Отличная статья!')
+post1.comment_set.add(comment1, bulk = False)
+user2 = User.objects.get(username = 'Сергей Иванов')
+comment2 = Comment(user = user2, comment_text = 'Ниачем :)))!')
+post2.comment_set.add(comment2, bulk = False)
+post1.comment_set.add(comment2, bulk = False)
+comment3 = Comment(user = user2, comment_text = 'Первый!')
+post3.comment_set.add(comment3, bulk = False)
+comment4 = Comment(user = user1, comment_text = 'Второй!')
+post3.comment_set.add(comment4, bulk = False)
+
+post1.like()
+post2.like()
+post3.like()
+post1.like()
+post3.dislike()
+
+comment1.like()
+comment1.like()
+comment2.dislike()
+comment3.like()
+
+user1.author.update_rating()
+user2.author.update_rating()
+
+
+a = Author.objects.all().values('user__username', 'author_rating').order_by('-author_rating').first()
+print(a['user__username'], a['author_rating'])
+
+bestpost = Post.objects.all().first()
+print(bestpost.post_time.strftime("%d/%m/%Y, %H:%M:%S"), bestpost.post_author.user.username, bestpost.post_rating, bestpost.post_title, bestpost.preview())
+ 
+comments = Comment.objects.filter(post = bestpost).values('comment_time', 'user__username', 'comment_rating', 'comment_text') 
+for c in comments:
+	print(c['comment_time'].strftime("%d/%m/%Y, %H:%M:%S"), c['user__username'], c['comment_rating'], c['comment_text'])
